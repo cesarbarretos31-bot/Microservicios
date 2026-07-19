@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Carter" Version="9.0.0" />
+    <PackageReference Include="Mapster" Version="10.0.7" />
     <PackageReference Include="Marten" Version="8.37.1" />
     <PackageReference Include="MediatR" Version="14.1.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.17" />
