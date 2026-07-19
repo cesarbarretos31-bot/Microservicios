@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace Basket.API.Models
+﻿namespace Basket.API.Models
 {
     public class ShoppingCartItem
     {
@@ -10,6 +8,6 @@ namespace Basket.API.Models
         public Guid ProductId { get; set; } = default!;
 
 
-        public StringInfo ProductName { get; set; } = default!;
+        public string ProductName { get; set; } = default!;
     }
 }
