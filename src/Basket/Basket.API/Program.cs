@@ -45,6 +45,10 @@ builder.Services.AddHealthChecks()
 // CONSTRUCCIÓN DE LA APLICACIÓN
 // ==========================================
 var app = builder.Build();
+app.UseCors(policy =>
+    policy.AllowAnyOrigin()
+          .AllowAnyMethod()
+          .AllowAnyHeader());
 
 // 6. Configuración del Pipeline HTTP
 app.MapCarter();
