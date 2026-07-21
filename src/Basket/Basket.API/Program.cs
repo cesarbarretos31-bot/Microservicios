@@ -11,21 +11,22 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCarter();
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 // Si ya tienes CachedBasketRepository, descomenta:
- builder.Services.Decorate<IBasketRepository, CachedBasketRepository>();
+builder.Services.Decorate<IBasketRepository, CachedBasketRepository>();
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
 });
 
+// Health Checks (Registrados ANTES de builder.Build())
+builder.Services.AddHealthChecks()
+   .AddNpgSql(builder.Configuration.GetConnectionString("Database")!)
+   .AddRedis(builder.Configuration.GetConnectionString("Redis")!);
+
 // Cross-cutting
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
 var app = builder.Build();
-
-builder.Services.AddHealthChecks()
-   .AddNpgSql(builder.Configuration.GetConnectionString("Database")!)
-   .AddRedis(builder.Configuration.GetConnectionString("Redis")!);
 
 // Pipeline
 app.MapCarter();
@@ -33,7 +34,6 @@ app.UseExceptionHandler(options => { });
 
 app.UseHealthChecks("/health", new HealthCheckOptions
 {
-
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
 
