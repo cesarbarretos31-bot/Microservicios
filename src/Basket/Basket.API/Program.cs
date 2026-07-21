@@ -9,7 +9,10 @@ using Carter;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Carter y MediatR (Resuelve el error del "sender" en las rutas)
+// 1. Configuración de CORS (Servicio necesario para que el frontend funcione)
+builder.Services.AddCors();
+
+// 2. Carter y MediatR (Resuelve el error del "sender" en las rutas)
 builder.Services.AddCarter();
 builder.Services.AddMediatR(config =>
 {
@@ -18,23 +21,23 @@ builder.Services.AddMediatR(config =>
     config.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });
 
-// 2. Marten / PostgreSQL (Resuelve el error de IDocumentSession)
+// 3. Marten / PostgreSQL (Resuelve el error de IDocumentSession)
 builder.Services.AddMarten(opts =>
 {
     opts.Connection(builder.Configuration.GetConnectionString("Database")!);
 }).UseLightweightSessions();
 
-// 3. Repositorios
+// 4. Repositorios
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.Decorate<IBasketRepository, CachedBasketRepository>();
 
-// 4. Redis Caché
+// 5. Redis Caché
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
 });
 
-// 5. Manejo de Excepciones y HealthChecks (Acomodados ANTES del Build)
+// 6. Manejo de Excepciones y HealthChecks (Acomodados ANTES del Build)
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
 builder.Services.AddHealthChecks()
@@ -45,12 +48,13 @@ builder.Services.AddHealthChecks()
 // CONSTRUCCIÓN DE LA APLICACIÓN
 // ==========================================
 var app = builder.Build();
+
+// 7. Configuración del Pipeline HTTP
 app.UseCors(policy =>
     policy.AllowAnyOrigin()
           .AllowAnyMethod()
           .AllowAnyHeader());
 
-// 6. Configuración del Pipeline HTTP
 app.MapCarter();
 app.UseExceptionHandler(options => { });
 
