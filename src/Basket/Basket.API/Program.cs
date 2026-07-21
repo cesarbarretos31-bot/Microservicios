@@ -7,10 +7,17 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Application services
+// 1. Application Services & MediatR (Necesario para que el 'sender' funcione en las rutas)
 builder.Services.AddCarter();
+builder.Services.AddMediatR(config =>
+{
+    config.RegisterServicesFromAssembly(typeof(Program).Assembly);
+    config.AddOpenBehavior(typeof(ValidationBehavior<,>));
+    config.AddOpenBehavior(typeof(LoggingBehavior<,>));
+});
+
+// 2. Repositories & Caching
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
-// Si ya tienes CachedBasketRepository, descomenta:
 builder.Services.Decorate<IBasketRepository, CachedBasketRepository>();
 
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -18,17 +25,17 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
 });
 
-// Health Checks (Registrados ANTES de builder.Build())
+// 3. Health Checks (Registrados antes de builder.Build())
 builder.Services.AddHealthChecks()
    .AddNpgSql(builder.Configuration.GetConnectionString("Database")!)
    .AddRedis(builder.Configuration.GetConnectionString("Redis")!);
 
-// Cross-cutting
+// 4. Cross-cutting (Manejo de excepciones)
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
 var app = builder.Build();
 
-// Pipeline
+// 5. Pipeline HTTP
 app.MapCarter();
 app.UseExceptionHandler(options => { });
 
